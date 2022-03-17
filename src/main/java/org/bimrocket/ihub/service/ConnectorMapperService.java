@@ -241,6 +241,7 @@ public class ConnectorMapperService
       String propertyName = propHandler.getName();
       try
       {
+        processor.setProperty(propertyName, propHandler.getValue(processor).toString());
         properties.put(propertyName, propHandler.getValue(processor));
       }
       catch (Exception ex)
