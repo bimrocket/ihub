@@ -121,6 +121,10 @@ public abstract class Processor
   public void end()
   {
   }
+  
+  public void afterProcessing() {
+    
+  }
 
   @Override
   public String toString()

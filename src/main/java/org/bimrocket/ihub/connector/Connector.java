@@ -53,8 +53,7 @@ import org.bimrocket.ihub.exceptions.ProcessorInitException;
  */
 public class Connector implements Runnable
 {
-  private static final Logger log =
-    LoggerFactory.getLogger(Connector.class);
+  private static final Logger log = LoggerFactory.getLogger(Connector.class);
 
   public static final String RUNNING_STATUS = "RUNNING";
   public static final String STOPPED_STATUS = "STOPPED";
@@ -264,25 +263,14 @@ public class Connector implements Runnable
   {
     StringBuilder buffer = new StringBuilder();
 
-    return buffer.append("Connector")
-      .append("{ name: \"")
-      .append(name)
-      .append("\", description: \"")
-      .append(description == null ? "" : description)
-      .append("\", inventory: \"")
-      .append(inventory)
-      .append("\", status: ")
-      .append(getStatus())
-      .append(", autoStart: ")
-      .append(autoStart)
-      .append(", singleRun: ")
-      .append(singleRun)
-      .append(", debug: ")
-      .append(debugEnabled)
-      .append(", processors: ")
-      .append(processors)
-      .append(" }")
-      .toString();
+    return buffer.append("Connector").append("{ name: \"").append(name)
+        .append("\", description: \"")
+        .append(description == null ? "" : description)
+        .append("\", inventory: \"").append(inventory).append("\", status: ")
+        .append(getStatus()).append(", autoStart: ").append(autoStart)
+        .append(", singleRun: ").append(singleRun).append(", debug: ")
+        .append(debugEnabled).append(", processors: ").append(processors)
+        .append(" }").toString();
   }
 
   @Override
@@ -301,8 +289,8 @@ public class Connector implements Runnable
     {
       if (!initProcessors(runningProcessors))
         throw new ProcessorInitException(427,
-          "Failed to initialize processor %s: %s", name,
-          lastError.getMessage());
+            "Failed to initialize processor %s: %s", name,
+            lastError.getMessage());
 
       while (!end)
       {
@@ -313,14 +301,13 @@ public class Connector implements Runnable
         {
           if (processor.isEnabled())
           {
-            log.debug("Executing processor {}",
-              processor.getClass().getName());
-
+            log.debug("Executing processor {}", processor.getClass().getName());
             if (processor.processObject(procObject))
             {
               processorCount++;
             }
-            else break;
+            else
+              break;
           }
         }
 
@@ -328,14 +315,20 @@ public class Connector implements Runnable
         {
           updateIdPairRepository(procObject);
           updateStatistics(procObject);
-          log.debug("Object processed, type: {}, operation: {}, "
-            + "localId: {}, globalId: {}",
-            procObject.getObjectType(), procObject.getOperation(),
-            procObject.getLocalId(), procObject.getGlobalId());
+          log.debug(
+              "Object processed, type: {}, operation: {}, "
+                  + "localId: {}, globalId: {}",
+              procObject.getObjectType(), procObject.getOperation(),
+              procObject.getLocalId(), procObject.getGlobalId());
         }
 
         if (processorCount == 0)
         {
+          for (var processor : runningProcessors)
+          {
+            if (processor.isEnabled())
+              processor.afterProcessing();
+          }
           if (singleRun)
           {
             end = true;
@@ -356,12 +349,13 @@ public class Connector implements Runnable
     catch (ProcessorInitException ex)
     {
       lastError = ex;
-      log.error(ex.getMessage());
+      log.error("ProcessorInitException message :: {}, stacktrace ::",
+          ex.getMessage(), ex);
     }
     catch (Exception ex)
     {
       lastError = ex;
-      log.error("An error has ocurred: {}", ex.toString());
+      log.error("An error has ocurred: {}", ex.toString(), ex);
     }
     finally
     {
@@ -405,7 +399,7 @@ public class Connector implements Runnable
   public ConnectorSetup saveSetup()
   {
     ConnectorSetup connSetup = service.getConnectorMapperService()
-      .getConnectorSetup(this);
+        .getConnectorSetup(this);
 
     service.getConnectorSetupRepository().save(connSetup);
 
@@ -428,12 +422,12 @@ public class Connector implements Runnable
   public ConnectorSetup restoreSetup() throws Exception
   {
     Optional<ConnectorSetup> optConnSetup = service
-      .getConnectorSetupRepository().findById(name);
+        .getConnectorSetupRepository().findById(name);
     if (optConnSetup.isPresent())
     {
       ConnectorSetup connSetup = optConnSetup.get();
       service.getConnectorMapperService().setConnectorSetup(this, connSetup,
-        true);
+          true);
 
       unsaved = false;
       lastError = null;
@@ -451,14 +445,14 @@ public class Connector implements Runnable
       {
         processor.init();
         log.debug("Processor #{}: {} initialized.", initialized,
-          processor.getClass().getName());
+            processor.getClass().getName());
 
         initialized++;
       }
       catch (Exception ex)
       {
         log.debug("Failed to initialize processor #{}: {}: {}", initialized,
-          processor.getClass().getName(), ex.toString());
+            processor.getClass().getName(), ex.toString(), ex);
         lastError = ex;
         break;
       }
@@ -485,16 +479,17 @@ public class Connector implements Runnable
       {
         processor.end();
         log.debug("Processor #{}: {} ended.", ended,
-          processor.getClass().getName());
+            processor.getClass().getName());
 
         ended++;
       }
       catch (Exception ex)
       {
         log.debug("Failed to end processor #{}: {}: {}", ended,
-          processor.getClass().getName(), ex.toString());
+            processor.getClass().getName(), ex.toString());
 
-        if (lastError == null) lastError = ex;
+        if (lastError == null)
+          lastError = ex;
       }
     }
   }
@@ -503,9 +498,9 @@ public class Connector implements Runnable
   {
     IdPairRepository idPairRepository = service.getIdPairRepository();
 
-    Optional<IdPair> result = idPairRepository.
-      findByInventoryAndObjectTypeAndLocalId(inventory,
-        procObject.getObjectType(), procObject.getLocalId());
+    Optional<IdPair> result = idPairRepository
+        .findByInventoryAndObjectTypeAndLocalId(inventory,
+            procObject.getObjectType(), procObject.getLocalId());
 
     if (procObject.isDelete())
     {
@@ -552,17 +547,17 @@ public class Connector implements Runnable
     processed++;
     switch (procObject.getOperation())
     {
-      case INSERT:
-        inserted++;
-        break;
-      case UPDATE:
-        updated++;
-        break;
-      case DELETE:
-        deleted++;
-        break;
-      default:
-        ignored++;
+    case INSERT:
+      inserted++;
+      break;
+    case UPDATE:
+      updated++;
+      break;
+    case DELETE:
+      deleted++;
+      break;
+    default:
+      ignored++;
     }
   }
 }

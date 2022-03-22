@@ -32,48 +32,32 @@ package org.bimrocket.ihub.config;
 
 import org.apache.spark.sql.SparkSession;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 @Configuration
-@ConditionalOnProperty(prefix = "ihub.spark", name = "enabled", havingValue = "true")
 public class SparkConfig
 {
   private static SparkSession session;
+
+  private static boolean enabled;
+  private static String sparkUrl;
+  private static String sparkTimezone;
+  private static String sparkDriverHost;
+  private static String sparkDriverPort;
+  private static String sparkBlockManagerPort;
+  private static String sparkDriverMemory;
+  private static String sparkDeployMode;
+  private static String sparkExecutorCores;
+  private static String sparkExecutorMemory;
   
-
-  @Value("${ihub.spark.url}")
-  String sparkUrl;
-
-  @Value("${ihub.spark.timezone}")
-  String sparkTimezone;
-
-  @Value("${ihub.spark.driver.host}")
-  String sparkDriverHost;
-
-  @Value("${ihub.spark.driver.port}")
-  String sparkDriverPort;
-
-  @Value("${ihub.spark.blockmanager.port}")
-  String sparkBlockManagerPort;
-
-  @Value("${ihub.spark.driver.memory}")
-  String sparkDriverMemory;
-
-  @Value("${ihub.spark.deploy.mode}")
-  String sparkDeployMode;
-
-  @Value("${ihub.spark.executor.cores}")
-  String sparkExecutorCores;
-
-  @Value("${ihub.spark.executor.memory}")
-  String sparkExecutorMemory;
-  
-  @Bean
-  @Primary
-  public SparkSession buildContext() {
+  public static SparkSession buildContext() throws Exception {
+    if (SparkConfig.session != null) {
+      return SparkConfig.getSession();
+    }
+    if (!SparkConfig.enabled) {
+      throw new Exception("Spark not enabled");
+    }
     SparkConfig.session = SparkSession.builder()
         .master(sparkUrl)
         .config("spark.sql.session.timezone",sparkTimezone)
@@ -92,4 +76,56 @@ public class SparkConfig
   public static SparkSession getSession() {
     return SparkConfig.session;
   }
+  
+  @Value("${ihub.spark.enabled}")
+  public void setEnabled(String enabled) {
+    SparkConfig.enabled = Boolean.valueOf(enabled);
+  };
+  
+  @Value("${ihub.spark.url}")
+  public void setUrl(String url) {
+    SparkConfig.sparkUrl = url;
+  };
+  
+  @Value("${ihub.spark.timezone}")
+  public void setTimezone(String sparkTimezone) {
+    SparkConfig.sparkTimezone = sparkTimezone;
+  };
+  
+  @Value("${ihub.spark.driver.host}")
+  public void setDriverHost(String sparkDriverHost) {
+    SparkConfig.sparkDriverHost = sparkDriverHost;
+  };
+
+  @Value("${ihub.spark.driver.port}")
+  public void setDriverPort(String sparkDriverPort) {
+    SparkConfig.sparkDriverPort = sparkDriverPort;
+  };
+  
+  @Value("${ihub.spark.blockmanager.port}")
+  public void setBlockmanagerPort(String sparkBlockManagerPort) {
+    SparkConfig.sparkBlockManagerPort = sparkBlockManagerPort;
+  };
+  
+  @Value("${ihub.spark.driver.memory}")
+  public void setDriverMemory(String sparkDriverMemory) {
+    SparkConfig.sparkDriverMemory = sparkDriverMemory;
+  };
+  
+  @Value("${ihub.spark.deploy.mode}")
+  public void setDeployMode(String sparkDeployMode) {
+    SparkConfig.sparkDeployMode = sparkDeployMode;
+  };
+  
+  @Value("${ihub.spark.executor.cores}")
+  public void setExecutorCores(String sparkExecutorCores) {
+    SparkConfig.sparkExecutorCores = sparkExecutorCores;
+  };
+  
+  @Value("${ihub.spark.executor.memory}")
+  public void setExecutorMemory(String sparkExecutorMemory) {
+    SparkConfig.sparkExecutorMemory = sparkExecutorMemory;
+  };
+
+  
 }

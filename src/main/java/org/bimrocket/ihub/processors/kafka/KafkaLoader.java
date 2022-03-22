@@ -50,7 +50,7 @@ public abstract class KafkaLoader extends Loader
     description = "Kafka bootstrap servers address")
   public String bootstrapAddress;
 
-  @ConfigProperty(name = "groudId",
+  @ConfigProperty(name = "groupId",
     description = "Number of the kafka group to which the loader belongs.")
   public String groupId;
 
