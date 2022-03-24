@@ -278,6 +278,7 @@ public class ConnectorMapperService
 
       try
       {
+        processor.setProperty(propertyName, propertyValue.toString());
         propHandler.setValue(processor, propertyValue);
       }
       catch (Exception ex)

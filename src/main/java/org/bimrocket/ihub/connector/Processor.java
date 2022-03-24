@@ -31,6 +31,8 @@
 
 package org.bimrocket.ihub.connector;
 
+import java.util.Properties;
+
 /**
  *
  * @author realor
@@ -40,6 +42,7 @@ public abstract class Processor
   private Connector connector;
   protected String description;
   protected boolean enabled;
+  protected Properties props = new Properties();
 
   public Processor()
   {
@@ -80,6 +83,14 @@ public abstract class Processor
   {
     this.enabled = enabled;
   }
+  
+  public Properties getProperties() {
+    return this.props;
+  }
+  
+  public void setProperty(String key, String value) {
+    this.props.setProperty(key, value);
+  }
 
 
   /**
@@ -109,6 +120,10 @@ public abstract class Processor
    */
   public void end()
   {
+  }
+  
+  public void afterProcessing() {
+    
   }
 
   @Override
