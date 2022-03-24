@@ -32,13 +32,11 @@ package org.bimrocket.ihub.processors.spark;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.bimrocket.ihub.config.SparkConfig;
 import org.bimrocket.ihub.connector.ProcessedObject;
@@ -148,8 +146,9 @@ public class SparkWriter extends Sender
       List<String> data = Arrays.asList(json);
 
       Dataset<String> ds = session.createDataset(data, Encoders.STRING());
-
-      ds.write().mode(mode)
+      Dataset<Row> rows = session.read().json(ds);
+      
+      rows.write().mode(mode)
           .format(format)
           .save(fsPath
               + fileName);
