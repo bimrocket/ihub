@@ -30,7 +30,9 @@
  */
 package org.bimrocket.ihub.web;
 
-import javax.faces.context.FacesContext;
+import java.util.Date;
+import org.bimrocket.ihub.service.InfoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -40,26 +42,28 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope("session")
-public class InventoryHubBean
+public class InfoBean
 {
-  public int getActiveTabIndex()
-  {
-    FacesContext ctx = FacesContext.getCurrentInstance();
-    String viewId = ctx.getViewRoot().getViewId();
+  @Autowired
+  InfoService infoService;
 
-    switch (viewId)
-    {
-      case "/connector_list.xhtml":
-        return 0;
-      case "/logs.xhtml":
-        return 1;
-      case "/idpair_repo.xhtml":
-        return 2;
-      case "/shell.xhtml":
-        return 3;
-      case "/info.xhtml":
-        return 4;
-    }
-    return 0;
+  public String getVersion()
+  {
+    return infoService.getVersion();
+  }
+
+  public String getUpTime()
+  {
+    return infoService.getUpTime();
+  }
+
+  public Date getStartDate()
+  {
+    return infoService.getStartDate();
+  }
+
+  public String getBuildTime()
+  {
+    return infoService.getBuildTime();
   }
 }
