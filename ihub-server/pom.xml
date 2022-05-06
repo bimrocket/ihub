@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.bimrocket</groupId>
+  <artifactId>ihub-server</artifactId>
+  <description>Inventory Hub server</description>
+  <version>1.1</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <joinfaces.version>4.6.6</joinfaces.version>
+  </properties>
+
+  <parent>
+    <groupId>org.bimrocket</groupId>
+    <artifactId>ihub</artifactId>
+    <version>1.1</version>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.bimrocket</groupId>
+      <artifactId>ihub-core</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.joinfaces</groupId>
+      <artifactId>jsf-spring-boot-starter</artifactId>
+      <version>${joinfaces.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.primefaces</groupId>
+      <artifactId>primefaces</artifactId>
+      <version>11.0.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.primefaces.extensions</groupId>
+        <artifactId>primefaces-extensions</artifactId>
+        <version>11.0.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- DEVTOOLS -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-devtools</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>full</id>
+      <properties>
+        <profile_name>full</profile_name>
+      </properties>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.bimrocket</groupId>
+          <artifactId>ihub-module-kafka</artifactId>
+          <version>1.1</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.bimrocket</groupId>
+          <artifactId>ihub-module-wfs</artifactId>
+          <version>1.1</version>
+        </dependency>
+
+        <dependency>
+          <groupId>org.bimrocket</groupId>
+          <artifactId>ihub-module-gemweb</artifactId>
+          <version>1.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>min</id>
+      <properties>
+        <profile_name>min</profile_name>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.bimrocket</groupId>
+          <artifactId>ihub-processors-kafka</artifactId>
+          <version>1.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
+  <build>
+    <finalName>ihub-${project.version}-${profile_name}</finalName>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.joinfaces</groupId>
+          <artifactId>joinfaces-maven-plugin</artifactId>
+          <version>${joinfaces.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>classpath-scan</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+   <plugins>
+      <plugin>
+        <groupId>org.joinfaces</groupId>
+        <artifactId>joinfaces-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <layout>ZIP</layout>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

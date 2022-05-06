@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+  <ui:composition>
+
+    <p:dialog id="connector_dialog"
+              header="Connector" widgetVar="connector"
+              resizable="false" width="700"
+              position="center center"
+              modal="true" height="auto"
+              class="modal-dialog">
+
+      <f:facet name="header">
+        <span class="ui-icon connector"></span> Connector
+      </f:facet>
+
+      <p:messages>
+         <p:autoUpdate />
+      </p:messages>
+
+      <p:panel id="connector_panel" class="ui-fluid">
+        <div class="field grid">
+          <p:outputLabel value="Name:" for="connector_name"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="connector_name" disabled="#{connectorBean.nameDisabled}"
+                         value="#{connectorBean.connectorSetup.name}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Description:" for="connector_description"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="connector_description"
+                         value="#{connectorBean.connectorSetup.description}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Inventory:" for="inventory"
+                         styleClass="col-12 mb-1 md:col-2 md:mb-0" />
+          <div class="col-12 md:col-10">
+            <p:inputText id="inventory"
+                         value="#{connectorBean.connectorSetup.inventory}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Crontab:" for="crontab"
+                         styleClass="col-fixed mb-1 md:col-2 md:mb-0" style="width:110px" />
+          <div class="col" style="max-width: 250px; min-width: 150px">
+            <p:inputText id="crontab" style="font-family: monospace"
+                         value="#{connectorBean.connectorSetup.crontab}" />
+            <p:tooltip for="crontab" value="Sec(0-59) Min(0-59) Hour(0-23) DoM(1-31) Month(1-12) DoW(0-7)" position="bottom" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Wait millis:" for="wait_millis"
+                         styleClass="col-fixed mb-1 md:col-2 md:mb-0" style="width:110px" />
+          <div class="col" style="max-width: 150px; min-width: 150px">
+            <p:spinner id="wait_millis"
+                       value="#{connectorBean.connectorSetup.waitMillis}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Single run:" for="single_run"
+                         styleClass="col-fixed mb-1 md:col-2 md:mb-0" style="width:110px" />
+          <div class="col">
+            <p:toggleSwitch id="single_run"
+                            value="#{connectorBean.connectorSetup.singleRun}" />
+          </div>
+        </div>
+
+        <div class="field grid">
+          <p:outputLabel value="Auto start:" for="auto_start"
+                         styleClass="col-fixed mb-1 md:col-2 md:mb-0" style="width:110px" />
+          <div class="col">
+            <p:toggleSwitch id="auto_start"
+                            value="#{connectorBean.connectorSetup.autoStart}" />
+          </div>
+        </div>
+
+      </p:panel>
+
+      <f:facet name="footer">
+        <p:commandButton value="Accept"
+                         id="accept_connector"
+                         icon="pi pi-check"
+                         update="connectors"
+                         action="#{connectorBean.accept}" />
+        <p:commandButton value="Cancel"
+                         immediate="true"
+                         icon="pi pi-times"
+                         oncomplete="PF('connector').hide()">
+          <p:ajax update="connector_panel" resetValues="true" />
+        </p:commandButton>
+      </f:facet>
+
+      <p:defaultCommand target="accept_connector" scope="connector_panel" />
+      <p:ajax event="close" update="connector_panel" resetValues="true" />
+
+    </p:dialog>
+
+  </ui:composition>
+
+</html>

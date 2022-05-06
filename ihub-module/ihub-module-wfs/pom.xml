@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.bimrocket</groupId>
+  <artifactId>ihub-module-wfs</artifactId>
+  <description>Inventory Hub WFS module</description>
+  <version>1.1</version>
+
+  <parent>
+    <groupId>org.bimrocket</groupId>
+    <artifactId>ihub-module</artifactId>
+    <version>1.1</version>
+  </parent>
+
+  <properties>
+    <geotools.version>26.2</geotools.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>osgeo</id>
+      <name>OSGeo Release Repository</name>
+      <url>https://repo.osgeo.org/repository/release/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.bimrocket</groupId>
+      <artifactId>ihub-core</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <!-- GEOTOOLS -->
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-shapefile</artifactId>
+      <version>${geotools.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-geojson</artifactId>
+      <version>${geotools.version}</version>
+    </dependency>
+
+    <!-- OTHER -->
+    <dependency>
+      <groupId>com.jcabi.incubator</groupId>
+      <artifactId>xembly</artifactId>
+      <version>0.22</version>
+    </dependency>
+
+  </dependencies>
+</project>

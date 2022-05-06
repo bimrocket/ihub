@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.bimrocket</groupId>
+  <artifactId>ihub-module</artifactId>
+  <version>1.1</version>
+  <description>Inventory Hub modules</description>
+  <packaging>pom</packaging>
+
+  <parent>
+    <groupId>org.bimrocket</groupId>
+    <artifactId>ihub</artifactId>
+    <version>1.1</version>
+  </parent>
+
+  <modules>
+    <module>ihub-module-kafka</module>
+    <module>ihub-module-gemweb</module>
+    <module>ihub-module-wfs</module>
+  </modules>
+</project>

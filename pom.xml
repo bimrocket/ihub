@@ -3,18 +3,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>org.bimrocket</groupId>
   <artifactId>ihub</artifactId>
   <description>Inventory Hub</description>
-  <version>1.0</version>
-  <packaging>jar</packaging>
+  <version>1.1</version>
+  <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
-    <joinfaces.version>4.6.6</joinfaces.version>
-    <geotools.version>26.2</geotools.version>
   </properties>
 
   <parent>
@@ -24,201 +23,28 @@
     <relativePath/>
   </parent>
 
-  <repositories>
-    <repository>
-      <id>osgeo</id>
-      <name>OSGeo Release Repository</name>
-      <url>https://repo.osgeo.org/repository/release/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </repository>
-    <repository>
-      <id>osgeo-snapshot</id>
-      <name>OSGeo Snapshot Repository</name>
-      <url>https://repo.osgeo.org/repository/snapshot/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.joinfaces</groupId>
-      <artifactId>jsf-spring-boot-starter</artifactId>
-      <version>${joinfaces.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.primefaces</groupId>
-      <artifactId>primefaces</artifactId>
-      <version>11.0.0</version>
-    </dependency>
-    <dependency>
-        <groupId>org.primefaces.extensions</groupId>
-        <artifactId>primefaces-extensions</artifactId>
-        <version>11.0.3</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-security</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-to-slf4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.integration</groupId>
-      <artifactId>spring-integration-kafka</artifactId>
-    </dependency>
-
-    <!-- DEVTOOLS -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-devtools</artifactId>
-      <scope>runtime</scope>
-      <optional>true</optional>
-    </dependency>
-
-    <!-- SCRIPTING -->
-    <dependency>
-      <groupId>org.mozilla</groupId>
-      <artifactId>rhino</artifactId>
-      <version>1.7.14</version>
-    </dependency>
-    <dependency>
-      <groupId>org.python</groupId>
-      <artifactId>jython-standalone</artifactId>
-      <version>2.7.2</version>
-    </dependency>
-
-    <!-- DATASTORES -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-mongodb</artifactId>
-    </dependency>
-
-    <!-- SWAGGER & SPRINGDOC -->
-    <dependency>
-      <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-ui</artifactId>
-      <version>1.6.6</version>
-    </dependency>
-    <dependency>
-      <groupId>io.swagger.core.v3</groupId>
-      <artifactId>swagger-annotations</artifactId>
-      <version>2.1.12</version>
-    </dependency>
-
-    <!-- GEOTOOLS -->
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-shapefile</artifactId>
-      <version>${geotools.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-geojson</artifactId>
-      <version>${geotools.version}</version>
-    </dependency>
-
-    <!-- OTHER -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-xml</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.reflections</groupId>
-      <artifactId>reflections</artifactId>
-      <version>0.10.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.jcabi.incubator</groupId>
-      <artifactId>xembly</artifactId>
-      <version>0.22</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-    </dependency>
-
-  </dependencies>
+  <modules>
+    <module>ihub-core</module>
+    <module>ihub-module</module>
+    <module>ihub-server</module>
+  </modules>
 
   <build>
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.joinfaces</groupId>
-          <artifactId>joinfaces-maven-plugin</artifactId>
-          <version>${joinfaces.version}</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>classpath-scan</goal>
-              </goals>
-            </execution>
-          </executions>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+            <compilerArgs>
+              <arg>-Xlint:all</arg>
+            </compilerArgs>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
-
-    <plugins>
-      <plugin>
-        <groupId>org.joinfaces</groupId>
-        <artifactId>joinfaces-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>pl.project13.maven</groupId>
-        <artifactId>git-commit-id-plugin</artifactId>
-        <version>2.2.5</version>
-        <executions>
-          <execution>
-            <id>get-the-git-infos</id>
-            <goals>
-              <goal>revision</goal>
-            </goals>
-            <phase>initialize</phase>
-          </execution>
-        </executions>
-        <configuration>
-          <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
-          <prefix>git</prefix>
-          <dateFormat>yyyy-MM-dd HH:mm:ss Z</dateFormat>
-          <dateFormatTimeZone>${user.timezone}</dateFormatTimeZone>
-          <failOnNoGitDirectory>false</failOnNoGitDirectory>
-          <verbose>true</verbose>
-          <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>${project.basedir}/target/classes/git.properties</generateGitPropertiesFilename>
-        </configuration>
-      </plugin>
-    </plugins>
   </build>
 
 </project>

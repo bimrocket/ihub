@@ -3,3 +3,21 @@
 .settings/*
 .project
 /logs/
+/ihub-server/target/
+/ihub-processors/ihub-processors-gemweb/target/
+/ihub-server (copia)/target/
+/ihub-core/target/
+/ihub-processors/ihub-processors-gemweb (copia)/target/
+/ihub-processors/ihub-processors-wfs/target/
+/ihub-processors/ihub-processors-kafka/target/
+/ihub-processors/ihub-processors-misc/target/
+/ihub-processors/ihub-processors-misc (copia)/target/
+/ihub-processors/ihub-processors-rhino/target/
+/ihub-server/logs/
+/ihub-module/ihub-processors-gemweb/target/
+/ihub-module/ihub-processors-kafka/target/
+/ihub-module/ihub-processors-misc/target/
+/ihub-module/ihub-processors-wfs/target/
+/ihub-module/ihub-module-gemweb/target/
+/ihub-module/ihub-module-kafka/target/
+/ihub-module/ihub-module-wfs/target/
