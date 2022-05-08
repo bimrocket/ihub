@@ -53,23 +53,26 @@
 
         <p:treeNode type="connector"
                     icon="connector">
-          <h:outputText value="#{data.name}: #{data.inventory}"
-                        styleClass="#{connectorListBean.isConnectorChanged(data) ?
-                        'changed' : ''}" />
-          <h:outputText value=" (unsaved)"
-                        rendered="#{connectorListBean.isConnectorUnsaved(data)}"
-                        styleClass="unsaved" />
+          <h:panelGroup id="connector_row" styleClass="connector_row">
+            <h:outputText value="#{data.name}: #{data.inventory}"
+                          styleClass="#{connectorListBean.isConnectorChanged(data) ?
+                          'changed' : ''}" />
+            <h:outputText value=" (unsaved)"
+                          rendered="#{connectorListBean.isConnectorUnsaved(data)}"
+                          styleClass="unsaved" />
 
-          <p:toggleSwitch value="#{connectorListBean.connectorStarted}"
-                          styleClass="start_stop_switch"
-                          ariaLabel="Start/Stop">
-            <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
-          </p:toggleSwitch>
+            <p:toggleSwitch id="start_stop_switch"
+                            value="#{connectorListBean.connectorStarted}"
+                            ariaLabel="Start/Stop">
+              <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
+            </p:toggleSwitch>
 
-          <p:chip label="#{connectorListBean.getConnectorError(data)}"
-                  icon="pi pi-exclamation-triangle"
-                  style="#{connectorListBean.getConnectorError(data) == null ? 'display:none' : ''}"
-                  styleClass="connector_error" />
+            <p:chip id="connector_error"
+                    label="#{connectorListBean.getConnectorError(data)}"
+                    rendered="#{connectorListBean.getConnectorError(data) != null}"
+                    icon="pi pi-exclamation-triangle"
+                    styleClass="connector_error" />
+          </h:panelGroup>
         </p:treeNode>
 
         <p:treeNode type="processor" icon="pi pi-cog">
@@ -86,7 +89,7 @@
         </p:treeNode>
       </p:tree>
 
-      <p:poll update="@(.start_stop_switch) @(.connector_error)" interval="3" />
+      <p:poll interval="3" listener="#{connectorListBean.updateConnectors}" />
 
       <p:contextMenu id="connector_menu"
                      for="connectors"

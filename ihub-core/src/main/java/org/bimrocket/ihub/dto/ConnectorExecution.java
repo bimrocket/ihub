@@ -31,6 +31,7 @@
 package org.bimrocket.ihub.dto;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  *
@@ -40,8 +41,8 @@ public class ConnectorExecution implements Serializable
 {
   private String name;
   private String description;
-  private String startTime;
-  private String endTime;
+  private String startDateTime;
+  private String endDateTime;
   private int processed;
   private int ignored;
   private int inserted;
@@ -69,24 +70,24 @@ public class ConnectorExecution implements Serializable
     this.description = description;
   }
 
-  public String getStartTime()
+  public String getStartDateTime()
   {
-    return startTime;
+    return startDateTime;
   }
 
-  public void setStartTime(String startTime)
+  public void setStartDateTime(String startDateTime)
   {
-    this.startTime = startTime;
+    this.startDateTime = startDateTime;
   }
 
-  public String getEndTime()
+  public String getEndDateTime()
   {
-    return endTime;
+    return endDateTime;
   }
 
-  public void setEndTime(String endTime)
+  public void setEndDateTime(String endDateTime)
   {
-    this.endTime = endTime;
+    this.endDateTime = endDateTime;
   }
 
   public int getProcessed()

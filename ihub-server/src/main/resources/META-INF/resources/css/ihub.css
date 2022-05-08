@@ -251,6 +251,22 @@ body .ui-dialog .CodeMirror
   height: 240px;
 }
 
+.ui-chip.connector_error
+{
+  background-color: #ffe0e0;
+}
+
+.connector_row
+{
+  vertical-align: middle;
+}
+
+.connector_row > *
+{
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
 /* icons */
 
 .connector
@@ -259,11 +275,6 @@ body .ui-dialog .CodeMirror
   background-size: 16px 16px;
   width:1rem;
   height:1rem;
-}
-
-.ui-chip.connector_error
-{
-  background-color: #ffe0e0;
 }
 
 .logs

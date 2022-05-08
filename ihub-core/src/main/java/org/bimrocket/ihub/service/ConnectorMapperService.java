@@ -304,13 +304,13 @@ public class ConnectorMapperService
     ConnectorExecution execution = new ConnectorExecution();
     execution.setName(connector.getName());
     execution.setDescription(connector.getDescription());
-    if (connector.getStartTime() != null)
+    if (connector.getStartDate() != null)
     {
-      execution.setStartTime(df.format(connector.getStartTime()));
+      execution.setStartDateTime(df.format(connector.getStartDate()));
     }
-    if (connector.getEndTime() != null)
+    if (connector.getEndDate() != null)
     {
-      execution.setEndTime(df.format(connector.getEndTime()));
+      execution.setEndDateTime(df.format(connector.getEndDate()));
     }
     execution.setProcessed(connector.getProcessed());
     execution.setInserted(connector.getInserted());

@@ -31,6 +31,7 @@
 package org.bimrocket.ihub.web;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -89,10 +90,13 @@ public class ConnectorListBean
 
   boolean connectorStarted;
 
+  long lastChangeMillis;
+
   public void search()
   {
     rootNode = findConnectors(connectorName);
     changed.clear();
+    lastChangeMillis = System.currentTimeMillis();
   }
 
   public String getConnectorName()
@@ -187,7 +191,12 @@ public class ConnectorListBean
         connectorService.getConnector(connName).getLastError();
       if (lastError != null)
       {
-        return lastError.getMessage();
+        String message = lastError.getMessage();
+        if (message.length() > 50)
+        {
+          message = message.substring(0, 50) + "...";
+        }
+        return message;
       }
     }
     catch (NotFoundException ex)
@@ -386,6 +395,33 @@ public class ConnectorListBean
     }
   }
 
+  public void updateConnectors()
+  {
+    List<String> componentIds = new ArrayList<>();
+    List<TreeNode<Object>> children = rootNode.getChildren();
+    for (int i = 0; i < children.size(); i++)
+    {
+      try
+      {
+        TreeNode<Object> node = children.get(i);
+        ConnectorSetup connSetup = (ConnectorSetup)node.getData();
+        Connector connector = connectorService.getConnector(connSetup.getName());
+        Date changeDate = connector.getChangeDate();
+        if (changeDate.getTime() > lastChangeMillis)
+        {
+          connectorMapperService.getConnectorSetup(connector).copyTo(connSetup);
+          componentIds.add("main:connectors:" + i + ":connector_row");
+        }
+      }
+      catch (Exception ex)
+      {
+        // ignore: connector deleted
+      }
+    }
+    lastChangeMillis = System.currentTimeMillis();
+    PrimeFaces.current().ajax().update(componentIds);
+  }
+
   public String getSelectedConnectorName()
   {
     if (selectedNode != null)
@@ -577,7 +613,7 @@ public class ConnectorListBean
 
   private TreeNode<Object> findConnectors(String name)
   {
-    rootNode = new DefaultTreeNode<>("root", "Inventories", null);
+    rootNode = new DefaultTreeNode<>("root", "Connectors", null);
 
     ArrayList<Connector> connectors =
       connectorService.getConnectorsByName(name);

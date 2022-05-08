@@ -89,9 +89,11 @@ public class Connector implements Runnable
 
   protected boolean autoStart = false;
 
-  protected Date startTime;
+  protected Date startDate;
 
-  protected Date endTime;
+  protected Date endDate;
+
+  protected Date changeDate;
 
   protected int processed;
 
@@ -113,6 +115,7 @@ public class Connector implements Runnable
   {
     this.service = service;
     this.name = name;
+    this.changeDate = new Date();
   }
 
   public String getName()
@@ -216,14 +219,19 @@ public class Connector implements Runnable
     return !StringUtils.isBlank(crontab);
   }
 
-  public Date getStartTime()
+  public Date getStartDate()
   {
-    return startTime;
+    return startDate;
   }
 
-  public Date getEndTime()
+  public Date getEndDate()
   {
-    return endTime;
+    return endDate;
+  }
+
+  public Date getChangeDate()
+  {
+    return changeDate;
   }
 
   public int getProcessed()
@@ -277,7 +285,9 @@ public class Connector implements Runnable
     this.processors.clear();
     this.processors.addAll(processors);
 
-    this.unsaved = true;
+    unsaved = true;
+
+    changeDate = new Date();
 
     return this;
   }
@@ -312,7 +322,8 @@ public class Connector implements Runnable
   public void run()
   {
     log.info("{} connector execution started.", name);
-    startTime = new Date();
+    startDate = new Date();
+    changeDate = startDate;
     lastError = null;
     end = false;
     resetStatistics();
@@ -397,16 +408,20 @@ public class Connector implements Runnable
       }
     }
 
-    endTime = new Date();
+    endDate = new Date();
+    changeDate = endDate;
     log.info("{} connector execution finished.", name);
     thread = null;
   }
 
   public synchronized Connector start()
   {
-    log.info("Start connector {}.", name);
     if (thread == null && task == null)
     {
+      log.info("Start connector {}.", name);
+
+      changeDate = new Date();
+
       if (isCrontab())
       {
         task = scheduleTask();
@@ -421,17 +436,23 @@ public class Connector implements Runnable
 
   public synchronized Connector stop()
   {
-    log.info("Stop connector {}.", name);
-    if (task != null)
+    if (task != null || thread != null)
     {
-      task.cancel();
-      task = null;
-    }
+      log.info("Stop connector {}.", name);
 
-    if (thread != null)
-    {
-      end = true;
-      notify();
+      changeDate = new Date();
+
+      if (task != null)
+      {
+        task.cancel();
+        task = null;
+      }
+
+      if (thread != null)
+      {
+        end = true;
+        notify();
+      }
     }
     return this;
   }
