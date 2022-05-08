@@ -30,6 +30,7 @@
  */
 package org.bimrocket.ihub.connector;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -47,10 +48,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.bimrocket.ihub.exceptions.NotFoundException;
 import org.bimrocket.ihub.exceptions.ProcessorInitException;
+import org.springframework.scheduling.support.CronExpression;
 import static org.bimrocket.ihub.connector.ProcessedObject.DELETE;
 import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import static org.bimrocket.ihub.connector.ProcessedObject.UPDATE;
-import org.springframework.scheduling.support.CronExpression;
 
 /**
  *
@@ -94,6 +95,8 @@ public class Connector implements Runnable
   protected Date endDate;
 
   protected Date changeDate;
+
+  protected Date nextExecutionDate;
 
   protected int processed;
 
@@ -234,6 +237,11 @@ public class Connector implements Runnable
     return changeDate;
   }
 
+  public Date getNextExecutionDate()
+  {
+    return nextExecutionDate;
+  }
+
   public int getProcessed()
   {
     return processed;
@@ -325,6 +333,7 @@ public class Connector implements Runnable
     startDate = new Date();
     changeDate = startDate;
     lastError = null;
+    nextExecutionDate = null;
     end = false;
     resetStatistics();
 
@@ -428,6 +437,7 @@ public class Connector implements Runnable
       }
       else
       {
+        nextExecutionDate = null;
         startThread();
       }
     }
@@ -446,6 +456,7 @@ public class Connector implements Runnable
       {
         task.cancel();
         task = null;
+        nextExecutionDate = null;
       }
 
       if (thread != null)
@@ -657,7 +668,8 @@ public class Connector implements Runnable
 
     if (next == null) return null;
 
-    Date date = Date.from(next.atZone(ZoneId.systemDefault()).toInstant());
+    Instant instant = next.atZone(ZoneId.systemDefault()).toInstant();
+    nextExecutionDate = Date.from(instant);
 
     TimerTask nextTask = new TimerTask()
     {
@@ -667,8 +679,8 @@ public class Connector implements Runnable
         startThread();
       }
     };
-    log.info("Scheduling {} connector execution for {}", name, date);
-    getConnectorService().getTimer().schedule(nextTask, date);
+    log.info("Scheduling {} connector execution for {}", name, nextExecutionDate);
+    getConnectorService().getTimer().schedule(nextTask, nextExecutionDate);
 
     return nextTask;
   }

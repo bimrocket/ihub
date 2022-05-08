@@ -67,6 +67,14 @@
               <p:ajax listener="#{connectorListBean.connectorStatusChanged}" />
             </p:toggleSwitch>
 
+            <h:outputText title="#{connectorListBean.getNextExecutionDate(data)}"
+                          rendered="#{connectorListBean.getNextExecutionDate(data) != null}"
+                          styleClass="pi pi-clock"/>
+
+            <h:outputText title="Running..."
+                          rendered="#{connectorListBean.isConnectorRunning(data)}"
+                          styleClass="pi pi-spin pi-spinner"/>
+
             <p:chip id="connector_error"
                     label="#{connectorListBean.getConnectorError(data)}"
                     rendered="#{connectorListBean.getConnectorError(data) != null}"

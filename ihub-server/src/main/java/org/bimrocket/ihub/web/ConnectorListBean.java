@@ -192,9 +192,9 @@ public class ConnectorListBean
       if (lastError != null)
       {
         String message = lastError.getMessage();
-        if (message.length() > 50)
+        if (message.length() > 80)
         {
-          message = message.substring(0, 50) + "...";
+          message = message.substring(0, 80) + "...";
         }
         return message;
       }
@@ -422,6 +422,34 @@ public class ConnectorListBean
     PrimeFaces.current().ajax().update(componentIds);
   }
 
+  public Date getNextExecutionDate(ConnectorSetup connSetup)
+  {
+    try
+    {
+      Connector connector = connectorService.getConnector(connSetup.getName());
+      return connector.getNextExecutionDate();
+    }
+    catch (Exception ex)
+    {
+      // ignore: connector deleted
+    }
+    return null;
+  }
+
+  public boolean isConnectorRunning(ConnectorSetup connSetup)
+  {
+    try
+    {
+      Connector connector = connectorService.getConnector(connSetup.getName());
+      return connector.isRunning();
+    }
+    catch (Exception ex)
+    {
+      // ignore: connector deleted
+    }
+    return false;
+  }
+
   public String getSelectedConnectorName()
   {
     if (selectedNode != null)
@@ -570,7 +598,7 @@ public class ConnectorListBean
 
     if (textValue.length() > 60)
     {
-      textValue = textValue.substring(0, 50) + "...";
+      textValue = textValue.substring(0, 60) + "...";
     }
 
     return textValue;
