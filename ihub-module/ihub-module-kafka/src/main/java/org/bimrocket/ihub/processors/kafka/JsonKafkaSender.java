@@ -30,35 +30,19 @@
  */
 package org.bimrocket.ihub.processors.kafka;
 
-import org.bimrocket.ihub.connector.ProcessedObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  *
  * @author kfiertek-nexus-geographics
+ * @author realor
  */
 public class JsonKafkaSender extends KafkaSender
 {
-  private static final Logger log =
-    LoggerFactory.getLogger(JsonKafkaSender.class);
 
   @Override
-  public boolean processObject(ProcessedObject procObject)
+  protected String formatObject(JsonNode globalObject)
   {
-    JsonNode toSend = procObject.getGlobalObject();
-    if (toSend == null)
-    {
-      return false;
-    }
-
-    var value = toSend.toString();
-    log.debug("sending {} json object to topic {}", toSend.toPrettyString(),
-      this.topicName);
-
-    this.template.send(this.topicName, value);
-
-    return true;
+    return globalObject.toString();
   }
 }

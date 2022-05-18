@@ -30,33 +30,56 @@
  */
 package org.bimrocket.ihub.processors.kafka;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Properties;
+import java.util.Queue;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.bimrocket.ihub.connector.ProcessedObject;
+import static org.bimrocket.ihub.connector.ProcessedObject.IGNORE;
+import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import org.bimrocket.ihub.processors.Loader;
 import org.bimrocket.ihub.util.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author kfiertek-nexus-geographics
+ * @author realor
  */
 public abstract class KafkaLoader extends Loader
 {
-  @ConfigProperty(name = "topicName",
-    description = "Kafka topic name from which recover JsonObjects.")
-  public String topicName;
+  private static final Logger log =
+    LoggerFactory.getLogger(KafkaLoader.class);
+
+  @ConfigProperty(name = "topic",
+    description = "Kafka topic from which recover JsonObjects.")
+  public String topic;
 
   @ConfigProperty(name = "bootstrapAddress",
     description = "Kafka bootstrap servers address")
-  public String bootstrapAddress;
+  public String bootstrapAddress = "localhost:9092";
 
   @ConfigProperty(name = "groudId",
-    description = "Number of the kafka group to which the loader belongs.")
+    description = "Number of the kafka group to which the loader belongs.",
+    required = false)
   public String groupId;
 
   @ConfigProperty(name = "offsetReset",
     description = "On which offset start to load records [earliest,latest]")
   public String offsetReset = "latest";
+
+  @ConfigProperty(name = "immediateCommit",
+    description = "Should group offset be commited to kafka db for each object processed?")
+  public boolean immediateCommit = false;
 
   @ConfigProperty(name = "autoCommit",
     description = "Should group offset be commited to kafka db?")
@@ -66,13 +89,28 @@ public abstract class KafkaLoader extends Loader
     description = "Interval every x seconds to commit actual consumer group's offset consumed.")
   public int commitInterval = 5;
 
-  protected KafkaConsumerRunnable runnableKafka;
-  protected Thread threatRunner;
+  @ConfigProperty(name = "objectType",
+    description = "The object type to load")
+  public String objectType;
+
+  @ConfigProperty(name = "pollMillis",
+    description = "The poll duration in millis")
+  public long pollMillis = 1000;
+
+  @ConfigProperty(name = "maxPollRecords",
+    description = "The maximum number of records to get in a poll call")
+  public int maxPollRecords = 1;
+
+  private KafkaConsumer<String, String> consumer;
+  private final Queue<String> records = new LinkedList<>();
 
   @Override
   public void init() throws Exception
   {
     super.init();
+
+    if (groupId == null) groupId = getConnector().getName();
+
     var props = new Properties();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
     props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
@@ -81,26 +119,64 @@ public abstract class KafkaLoader extends Loader
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
       StringDeserializer.class.getName());
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetReset);
+    props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, autoCommit);
     props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
       commitInterval * 1000);
-    runnableKafka = new KafkaConsumerRunnable(getConnector(), topicName, props);
-    threatRunner = new Thread(runnableKafka);
-    threatRunner.start();
+
+    if (topic == null) throw new Exception("topic not specified");
+
+    consumer = new KafkaConsumer<>(props);
+    consumer.subscribe(Arrays.asList(topic));
   }
 
-  protected String getRecord()
+  @Override
+  public boolean processObject(ProcessedObject procObject)
   {
-    return this.runnableKafka.getRecord();
+    if (records.isEmpty())
+    {
+      ConsumerRecords<String, String> pollRecords =
+        consumer.poll(Duration.ofMillis(pollMillis));
+
+      log.debug("{} records read from kafka", pollRecords.count());
+
+      Iterator<ConsumerRecord<String, String>> iter = pollRecords.iterator();
+      while (iter.hasNext())
+      {
+        records.add(iter.next().value());
+      }
+    }
+
+    String record = records.poll();
+    if (record == null)
+    {
+      procObject.setObjectType(objectType);
+      procObject.setOperation(IGNORE);
+      return false;
+    }
+    else
+    {
+      JsonNode globalObject = parseObject(record);
+      if (globalObject == null) return false;
+
+      procObject.setGlobalObject(globalObject);
+      procObject.setOperation(INSERT);
+      procObject.setObjectType(objectType);
+
+      if (immediateCommit)
+      {
+        consumer.commitSync();
+      }
+      return true;
+    }
   }
 
   @Override
   public void end()
   {
     super.end();
-    runnableKafka.shutdown();
-    threatRunner.interrupt();
-    runnableKafka = null;
-    threatRunner = null;
+    consumer.close();
   }
+
+  protected abstract JsonNode parseObject(String record);
 }

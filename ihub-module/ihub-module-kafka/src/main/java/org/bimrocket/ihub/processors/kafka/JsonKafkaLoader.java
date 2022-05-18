@@ -30,56 +30,35 @@
  */
 package org.bimrocket.ihub.processors.kafka;
 
-import org.bimrocket.ihub.connector.ProcessedObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bimrocket.ihub.util.ConfigProperty;
 
 /**
  *
  * @author kfiertek-nexus-geographics
+ * @author realor
  */
 public class JsonKafkaLoader extends KafkaLoader
 {
   private static final Logger log =
     LoggerFactory.getLogger(JsonKafkaLoader.class);
 
-  @ConfigProperty(name = "objectType",
-    description = "The object type to load")
-  public String objectType;
-
   protected final ObjectMapper mapper = new ObjectMapper();
 
   @Override
-  public boolean processObject(ProcessedObject procObject)
+  protected JsonNode parseObject(String record)
   {
-    String recordLoaded = getRecord();
-
-    log.debug("getting record from kafka, record::{}", recordLoaded);
-    if (recordLoaded == null)
+    try
     {
-      procObject.setObjectType(objectType);
-      procObject.setOperation(ProcessedObject.IGNORE);
-      return false;
+      return mapper.readTree(record);
     }
-    else
+    catch (JsonProcessingException ex)
     {
-      procObject.setOperation(ProcessedObject.INSERT);
-      procObject.setObjectType(objectType);
-      try
-      {
-        procObject.setLocalObject(mapper.readTree(recordLoaded));
-      }
-      catch (JsonProcessingException e)
-      {
-        log.debug("record not a valid json, this should never happen incoming record::{}",
-          recordLoaded);
-        procObject.setOperation(ProcessedObject.IGNORE);
-        return false;
-      }
-      return true;
+      log.error("Parse error", ex);
+      return null;
     }
   }
 }

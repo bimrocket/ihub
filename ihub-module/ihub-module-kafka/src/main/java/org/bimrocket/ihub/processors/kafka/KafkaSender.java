@@ -30,28 +30,36 @@
  */
 package org.bimrocket.ihub.processors.kafka;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.bimrocket.ihub.processors.*;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.util.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 
 /**
  *
+ * @author kfiertek-nexus-geographics
  * @author realor
  */
 public abstract class KafkaSender extends Sender
 {
-  @ConfigProperty(name = "topicName",
+  private static final Logger log =
+    LoggerFactory.getLogger(JsonKafkaSender.class);
+
+  @ConfigProperty(name = "topic",
     description = "Kafka topic name to which send String.")
-  public String topicName;
+  public String topic;
 
   @ConfigProperty(name = "bootstrapAddress",
     description = "Kafka bootstrap servers address")
-  public String bootstrapAddress;
+  public String bootstrapAddress = "localhost:9092";
 
   protected KafkaTemplate<String, String> template;
 
@@ -60,7 +68,7 @@ public abstract class KafkaSender extends Sender
   {
     super.init();
     template = new KafkaTemplate<>(
-        new DefaultKafkaProducerFactory<>(producerConfigs()));
+      new DefaultKafkaProducerFactory<>(producerConfigs()));
   }
 
   private Map<String, Object> producerConfigs()
@@ -75,4 +83,25 @@ public abstract class KafkaSender extends Sender
     // properties
     return props;
   }
+
+  @Override
+  public boolean processObject(ProcessedObject procObject)
+  {
+    JsonNode globalObject = procObject.getGlobalObject();
+    if (globalObject == null || procObject.isIgnore())
+    {
+      return false;
+    }
+
+    var value = formatObject(globalObject);
+
+    log.debug("sending {} json object to topic {}",
+      globalObject.toPrettyString(), this.topic);
+
+    this.template.send(this.topic, value);
+
+    return true;
+  }
+
+  protected abstract String formatObject(JsonNode globalObject);
 }
