@@ -62,7 +62,7 @@ public class Connector implements Runnable
   private static final Logger log =
     LoggerFactory.getLogger(Connector.class);
 
-  private static final String THREAD_PREFIX = "c:";
+  public static final String THREAD_PREFIX = "c:";
 
   protected ConnectorService service;
 

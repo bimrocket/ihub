@@ -138,6 +138,9 @@
           <p:confirm header="Confirm" icon="pi pi-exclamation-triangle"
                      message="Really want to delete the connector {#{connectorListBean.selectedConnectorName}}?" />
         </p:menuitem>
+        <p:menuitem value="Show logs"
+                    action="#{connectorListBean.showConnectorLogs}"
+                    icon="logs"/>
       </p:contextMenu>
 
       <p:contextMenu id="processor_menu"

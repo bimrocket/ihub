@@ -82,6 +82,9 @@ public class ConnectorListBean
   @Autowired
   PropertyBean propertyBean;
 
+  @Autowired
+  LogsBean logsBean;
+
   TreeNode<Object> rootNode = new DefaultTreeNode<>("root", "Inventories", null);
   TreeNode<Object> selectedNode;
   String connectorName;
@@ -461,6 +464,20 @@ public class ConnectorListBean
       }
     }
     return null;
+  }
+
+  public String showConnectorLogs()
+  {
+    if (selectedNode != null)
+    {
+      if (selectedNode.getData() instanceof ConnectorSetup)
+      {
+        ConnectorSetup connSetup = (ConnectorSetup)selectedNode.getData();
+        String threadName = Connector.THREAD_PREFIX + connSetup.getName();
+        logsBean.getFilter().setThreadName(threadName);
+      }
+    }
+    return "logs.xhtml?faces-redirect=true";
   }
 
   // processor operations
