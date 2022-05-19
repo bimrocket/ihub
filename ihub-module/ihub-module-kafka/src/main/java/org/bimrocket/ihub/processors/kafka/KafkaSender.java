@@ -35,6 +35,9 @@ import org.bimrocket.ihub.processors.*;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Headers;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.util.ConfigProperty;
@@ -87,18 +90,33 @@ public abstract class KafkaSender extends Sender
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
+    String inventory = getConnector().getInventory();
     JsonNode globalObject = procObject.getGlobalObject();
-    if (globalObject == null || procObject.isIgnore())
+    String operation = procObject.getOperation();
+    String globalId = procObject.getGlobalId();
+    String objectType = procObject.getObjectType();
+
+    if (inventory == null || globalObject == null || globalId == null
+        || operation == null || objectType == null || procObject.isIgnore())
     {
       return false;
     }
 
     var value = formatObject(globalObject);
 
+    ProducerRecord<String, String> record = new ProducerRecord<>(topic, value);
+
+    Headers headers = record.headers();
+
+    headers.add(new RecordHeader("inventory", inventory.getBytes()));
+    headers.add(new RecordHeader("objectType", objectType.getBytes()));
+    headers.add(new RecordHeader("operation", operation.getBytes()));
+    headers.add(new RecordHeader("globalId", globalId.getBytes()));
+
     log.debug("sending {} json object to topic {}",
       globalObject.toPrettyString(), this.topic);
 
-    this.template.send(this.topic, value);
+    this.template.send(record);
 
     return true;
   }

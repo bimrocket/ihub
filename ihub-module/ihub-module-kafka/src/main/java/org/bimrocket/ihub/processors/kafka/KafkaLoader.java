@@ -33,7 +33,6 @@ package org.bimrocket.ihub.processors.kafka;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
@@ -41,14 +40,15 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.bimrocket.ihub.connector.ProcessedObject;
-import static org.bimrocket.ihub.connector.ProcessedObject.IGNORE;
-import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 import org.bimrocket.ihub.processors.Loader;
 import org.bimrocket.ihub.util.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.bimrocket.ihub.connector.ProcessedObject.IGNORE;
+import static org.bimrocket.ihub.connector.ProcessedObject.INSERT;
 
 /**
  *
@@ -77,18 +77,6 @@ public abstract class KafkaLoader extends Loader
     description = "On which offset start to load records [earliest,latest]")
   public String offsetReset = "latest";
 
-  @ConfigProperty(name = "immediateCommit",
-    description = "Should group offset be commited to kafka db for each object processed?")
-  public boolean immediateCommit = false;
-
-  @ConfigProperty(name = "autoCommit",
-    description = "Should group offset be commited to kafka db?")
-  public boolean autoCommit = true;
-
-  @ConfigProperty(name = "commitInterval",
-    description = "Interval every x seconds to commit actual consumer group's offset consumed.")
-  public int commitInterval = 5;
-
   @ConfigProperty(name = "objectType",
     description = "The object type to load")
   public String objectType;
@@ -99,10 +87,11 @@ public abstract class KafkaLoader extends Loader
 
   @ConfigProperty(name = "maxPollRecords",
     description = "The maximum number of records to get in a poll call")
-  public int maxPollRecords = 1;
+  public int maxPollRecords = 100;
 
   private KafkaConsumer<String, String> consumer;
-  private final Queue<String> records = new LinkedList<>();
+  private final Queue<ConsumerRecord<String, String>> bufferedRecords =
+    new LinkedList<>();
 
   @Override
   public void init() throws Exception
@@ -120,9 +109,7 @@ public abstract class KafkaLoader extends Loader
       StringDeserializer.class.getName());
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetReset);
     props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
-    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, autoCommit);
-    props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG,
-      commitInterval * 1000);
+    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
     if (topic == null) throw new Exception("topic not specified");
 
@@ -133,21 +120,31 @@ public abstract class KafkaLoader extends Loader
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-    if (records.isEmpty())
+    boolean commitPending = !bufferedRecords.isEmpty();
+
+    while (bufferedRecords.isEmpty())
     {
-      ConsumerRecords<String, String> pollRecords =
+      ConsumerRecords<String, String> records =
         consumer.poll(Duration.ofMillis(pollMillis));
 
-      log.debug("{} records read from kafka", pollRecords.count());
+      log.debug("{} records read from kafka", records.count());
 
-      Iterator<ConsumerRecord<String, String>> iter = pollRecords.iterator();
-      while (iter.hasNext())
-      {
-        records.add(iter.next().value());
-      }
+      if (records.count() == 0) break;
+
+      commitPending = true;
+
+      addRecordsToBuffer(records, bufferedRecords);
     }
 
-    String record = records.poll();
+    ConsumerRecord<String, String> record = bufferedRecords.poll();
+
+    if (bufferedRecords.isEmpty() && commitPending)
+    {
+      // commit only when all records have been processed
+      consumer.commitSync();
+      log.debug("kafka consumer committed.");
+    }
+
     if (record == null)
     {
       procObject.setObjectType(objectType);
@@ -156,17 +153,12 @@ public abstract class KafkaLoader extends Loader
     }
     else
     {
-      JsonNode globalObject = parseObject(record);
+      JsonNode globalObject = parseObject(record.value());
       if (globalObject == null) return false;
 
       procObject.setGlobalObject(globalObject);
       procObject.setOperation(INSERT);
       procObject.setObjectType(objectType);
-
-      if (immediateCommit)
-      {
-        consumer.commitSync();
-      }
       return true;
     }
   }
@@ -176,6 +168,29 @@ public abstract class KafkaLoader extends Loader
   {
     super.end();
     consumer.close();
+  }
+
+  protected void addRecordsToBuffer(ConsumerRecords<String, String> records,
+    Queue<ConsumerRecord<String, String>> bufferedRecords)
+  {
+    String inventory = getConnector().getInventory();
+
+    for (ConsumerRecord<String, String> record : records)
+    {
+      // ignore records generated by the same inventory
+      for (Header header : record.headers())
+      {
+        if (header.key().equals("inventory"))
+        {
+          String recordInventory = new String(header.value());
+          if (!inventory.equals(recordInventory))
+          {
+            bufferedRecords.add(record);
+          }
+          break;
+        }
+      }
+    }
   }
 
   protected abstract JsonNode parseObject(String record);

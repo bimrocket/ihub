@@ -31,7 +31,6 @@
 package org.bimrocket.ihub.dto;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  *
