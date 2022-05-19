@@ -34,10 +34,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.bimrocket.ihub.connector.Connector;
 import org.bimrocket.ihub.connector.ProcessedObject;
 import org.bimrocket.ihub.connector.Processor;
 import org.bimrocket.ihub.repo.IdPairRepository;
 import org.bimrocket.ihub.util.ConfigProperty;
+import org.bimrocket.ihub.util.IdMapper;
 import org.mozilla.javascript.ConsString;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
@@ -71,11 +73,16 @@ public class RhinoProcessor extends Processor
     script = context.compileString(scriptCode, "converter", 0, null);
     scope = context.initStandardObjects();
 
-    scope.put("connector", scope, getConnector());
+    Connector connector = getConnector();
+
+    scope.put("connector", scope, connector);
 
     IdPairRepository idPairRepository = getConnector().getConnectorService()
       .getIdPairRepository();
-    scope.put("idPairRepository", scope, idPairRepository);
+
+    String inventory = connector.getInventory();
+
+    scope.put("idMapper", scope, new IdMapper(idPairRepository, inventory));
   }
 
   @Override
