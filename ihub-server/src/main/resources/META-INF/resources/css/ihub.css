@@ -83,8 +83,8 @@ body,
 body .ui-widget,
 body .ui-inputfield
 {
-  --font-family: Ubuntu, Arial;
-  font-family: Ubuntu, Arial;
+  --font-family: Arial;
+  font-family: Arial;
   font-size: 11pt;
 }
 
@@ -164,6 +164,16 @@ body th .p-datepicker > input
   width: 100%;
 }
 
+body .ui-tree .ui-tree-container .ui-treenode .ui-treenode-content
+{
+  display: block;
+}
+
+body .ui-tree .ui-tree-container .ui-treenode .ui-treenode-content .ui-treenode-leaf-icon
+{
+  vertical-align: middle;
+}
+
 /* specific styles */
 
 div.block
@@ -181,6 +191,17 @@ div.block.code
 span.error
 {
   color:red;
+}
+
+li[data-nodetype=connector] > .ui-treenode-content
+{
+  background-color: #e0f0ff;
+  border-radius: 4px;
+}
+
+.connector_name
+{
+  font-weight: bold;
 }
 
 .changed

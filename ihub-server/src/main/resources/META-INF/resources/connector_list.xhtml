@@ -22,7 +22,7 @@
                          styleClass="flex align-items-center justify-content-center m-1" />
           <p:inputText id="filter" value="#{connectorListBean.connectorName}"
                        styleClass="flex align-items-center justify-content-center m-1"
-                       style="width:180px; max-width: 100%"/>
+                       style="width:150px; max-width: 100%"/>
           <p:commandButton value="Search"
                            id="search_connectors"
                            update="filter,connectors"
@@ -55,7 +55,7 @@
                     icon="connector">
           <h:panelGroup id="connector_row" styleClass="connector_row">
             <h:outputText value="#{data.name}: #{data.inventory}"
-                          styleClass="#{connectorListBean.isConnectorChanged(data) ?
+                          styleClass="connector_name #{connectorListBean.isConnectorChanged(data) ?
                           'changed' : ''}" />
             <h:outputText value=" (unsaved)"
                           rendered="#{connectorListBean.isConnectorUnsaved(data)}"
