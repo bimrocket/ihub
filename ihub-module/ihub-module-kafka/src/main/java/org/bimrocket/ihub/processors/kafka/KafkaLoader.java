@@ -92,6 +92,7 @@ public abstract class KafkaLoader extends Loader
   private KafkaConsumer<String, String> consumer;
   private final Queue<ConsumerRecord<String, String>> bufferedRecords =
     new LinkedList<>();
+  private boolean commitPending;
 
   @Override
   public void init() throws Exception
@@ -115,12 +116,13 @@ public abstract class KafkaLoader extends Loader
 
     consumer = new KafkaConsumer<>(props);
     consumer.subscribe(Arrays.asList(topic));
+    commitPending = false;
   }
 
   @Override
   public boolean processObject(ProcessedObject procObject)
   {
-    boolean commitPending = !bufferedRecords.isEmpty();
+    commitIfNecessary();
 
     while (bufferedRecords.isEmpty())
     {
@@ -137,13 +139,6 @@ public abstract class KafkaLoader extends Loader
     }
 
     ConsumerRecord<String, String> record = bufferedRecords.poll();
-
-    if (bufferedRecords.isEmpty() && commitPending)
-    {
-      // commit only when all records have been processed
-      consumer.commitSync();
-      log.debug("kafka consumer committed.");
-    }
 
     if (record == null)
     {
@@ -167,7 +162,21 @@ public abstract class KafkaLoader extends Loader
   public void end()
   {
     super.end();
+
+    commitIfNecessary();
+
     consumer.close();
+  }
+
+  protected void commitIfNecessary()
+  {
+    if (commitPending && bufferedRecords.isEmpty())
+    {
+      // commit only when all records have been processed
+      consumer.commitSync();
+      log.debug("kafka consumer committed.");
+      commitPending = false;
+    }
   }
 
   protected void addRecordsToBuffer(ConsumerRecords<String, String> records,
