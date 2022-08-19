@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  ihub:
+    image: ihub:0.0.0
+    ports:
+     - "8080:8080"
+    hostname: ihub
+    restart: always
+    depends_on: 
+      - mongodb
+    networks:
+      - cityos_network   
+  mongodb:
+    image: mongo:4.4.14
+    ports:
+      - "27017:27017"
+    hostname: mongodb
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cityos_network
+networks:
+  cityos_network:
+volumes:
+  mongodb_data:
+
