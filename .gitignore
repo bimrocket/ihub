@@ -21,3 +21,5 @@
 /ihub-module/ihub-module-gemweb/target/
 /ihub-module/ihub-module-kafka/target/
 /ihub-module/ihub-module-wfs/target/
+*.prefs
+*.old
