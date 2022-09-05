@@ -10,6 +10,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 WORKDIR /opt
 
 ADD ihub-server/target/${JAR_FILE} /opt/
+ADD ihub-server/src/main/resources/application.properties /opt/
+
+
 
 COPY entrypoint.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/entrypoint.sh
